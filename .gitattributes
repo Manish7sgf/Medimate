@@ -1,0 +1,2 @@
+medi_env/**/*.lib filter=lfs diff=lfs merge=lfs -text
+medi_env/**/*.dll filter=lfs diff=lfs merge=lfs -text
