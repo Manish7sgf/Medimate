@@ -48,15 +48,19 @@ env/
 *.sqlite3
 
 # ML Model files (large)
-medimate-disease-model/*.bin
-medimate-disease-model/*.pt
-medimate-ner-output/*.bin
-medimate-ner-output/*.pt
+medimate-disease-model/
+medimate-ner-output/
 
 # Torch wheels (large)
 torch-*.whl
 torchvision-*.whl
 torchaudio-*.whl
+
+# Large data files
+*.jsonl
+*.bin
+*.pt
+*.pkl
 
 # Logs
 *.log
