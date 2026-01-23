@@ -1,0 +1,3258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediMate Pro - AI Healthcare Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+  /* Semantic Color Variables - LIGHT THEME */
+  --bg-primary: #ffffff;          /* Main background - white */
+  --bg-secondary: #f8fafc;        /* Secondary background - light gray */
+  --bg-tertiary: #f1f5f9;         /* Tertiary background - lighter gray */
+  --text-primary: #1e293b;        /* Main text - dark */
+  --text-secondary: #64748b;      /* Secondary text - gray */
+  --border-color: #e2e8f0;        /* Border color - light gray */
+  
+  /* Original Color Variables */
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #dbeafe;
+  --secondary: #00a896;
+  --accent: #ff6b6b;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --light: #f8fafc;
+  --dark: #1e293b;
+  --gray: #64748b;
+  --light-gray: #e2e8f0;
+  --white: #ffffff;
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* advice colors – LIGHT THEME */
+  --advice-severe-bg: #fee2e2;
+  --advice-severe-text: #b91c1c;
+  --advice-moderate-bg: #fef3c7;
+  --advice-moderate-text: #92400e;
+  --advice-mild-bg: #d1fae5;
+  --advice-mild-text: #065f46;
+}
+
+/* DARK THEME */
+[data-theme="dark"] {
+  /* Semantic Color Variables - DARK THEME */
+  --bg-primary: #0f172a;          /* Main background - dark blue */
+  --bg-secondary: #1e293b;        /* Secondary background - slightly lighter */
+  --bg-tertiary: #0a0f1a;         /* Tertiary background - darkest */
+  --text-primary: #f1f5f9;        /* Main text - white */
+  --text-secondary: #cbd5e1;      /* Secondary text - light gray */
+  --border-color: #334155;        /* Border color - dark gray */
+  
+  /* Original Color Variables */
+  --primary: #60a5fa;
+  --primary-dark: #3b82f6;
+  --primary-light: #1e3a8a;
+  --light: #1e293b;
+  --dark: #f1f5f9;
+  --gray: #cbd5e1;
+  --light-gray: #475569;
+  --white: #0f172a;
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+
+  /* advice colors – DARK THEME (fixed contrast) */
+  --advice-severe-bg: #7f1d1d;
+  --advice-severe-text: #fecaca;
+  --advice-moderate-bg: #78350f;
+  --advice-moderate-text: #fef3c7;
+  --advice-mild-bg: #064e3b;
+  --advice-mild-text: #d1fae5;
+}
+
+
+    html {
+      background: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      height: 100%;
+      transition: var(--transition);
+      display: flex;
+      overflow: hidden;
+    }
+
+    [data-theme="dark"] body {
+      background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg-primary);
+      border-right: 1px solid var(--border-color);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      transition: var(--transition);
+    }
+
+    [data-theme="dark"] .sidebar {
+      background: var(--bg-primary);
+      border-right-color: var(--border-color);
+    }
+    .advice-box {
+      padding: 16px 18px;
+      border-radius: 16px;
+      margin-top: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--light-gray);
+    }
+
+.advice-box.severe { background: var(--advice-severe-bg); }
+.advice-box.moderate { background: var(--advice-moderate-bg); }
+.advice-box.mild { background: var(--advice-mild-bg); }
+
+.advice-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.advice-box.severe .advice-title { color: var(--advice-severe-text); }
+.advice-box.moderate .advice-title { color: var(--advice-moderate-text); }
+.advice-box.mild .advice-title { color: var(--advice-mild-text); }
+
+.advice-text {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.advice-box.severe .advice-text,
+.advice-box.severe .advice-list li { color: var(--advice-severe-text); }
+
+.advice-box.moderate .advice-text,
+.advice-box.moderate .advice-list li { color: var(--advice-moderate-text); }
+
+.advice-box.mild .advice-text,
+.advice-box.mild .advice-list li { color: var(--advice-mild-text); }
+
+.advice-list {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.advice-list li {
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 2px 0;
+}
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .sidebar-toggle {
+      margin-left: auto;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: var(--light);
+      color: var(--dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      font-size: 16px;
+    }
+
+    [data-theme="dark"] .sidebar-toggle {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+
+    .sidebar-toggle:hover {
+      background: var(--primary);
+      color: white;
+      transform: rotate(-180deg);
+    }
+
+    .sidebar.collapsed {
+      width: 70px;
+      padding: 12px 8px;
+    }
+
+    .sidebar.collapsed .app-title,
+    .sidebar.collapsed .menu-section-title,
+    .sidebar.collapsed .menu-item span,
+    .sidebar.collapsed .theme-option span,
+    .sidebar.collapsed .theme-selector {
+      display: none;
+    }
+
+    .sidebar.collapsed .sidebar-header {
+      flex-direction: column;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
+
+    .sidebar.collapsed .sidebar-toggle i {
+      transform: rotate(180deg);
+    }
+
+    .sidebar.collapsed .menu-item {
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .sidebar.collapsed .app-logo {
+      margin-bottom: 0;
+    }
+
+    .main-content.sidebar-collapsed {
+      margin-left: 70px;
+    }
+
+    .app-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .menu-section {
+      margin-bottom: 24px;
+    }
+
+    .menu-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 12px;
+      padding: 0 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--dark);
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .menu-item:hover {
+      background: var(--primary-light);
+      transform: translateX(4px);
+    }
+
+    [data-theme="dark"] .menu-item:hover {
+      background: rgba(96, 165, 250, 0.2);
+    }
+
+    .menu-item.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .menu-item i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .theme-selector {
+      margin-top: auto;
+      padding: 12px;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    [data-theme="dark"] .theme-selector {
+      border-top-color: var(--border-color);
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--dark);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .theme-option:hover {
+      background: var(--primary-light);
+    }
+
+    .theme-option.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 280px;
+      flex: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: transparent;
+    }
+
+    .top-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--light-gray);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .top-header {
+      background: var(--bg-primary);
+      border-bottom-color: var(--border-color);
+    }
+
+    .new-chat-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .new-chat-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    .new-chat-btn:active {
+      transform: translateY(0);
+    }
+
+    .new-chat-btn i {
+      font-size: 14px;
+    }
+
+    .page-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--success);
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .status-badge.offline {
+      background: var(--danger);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes pulse-send {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Quick Actions Bar */
+    .quick-actions-bar {
+      padding: 12px 28px;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    [data-theme="dark"] .quick-actions-bar {
+      background: var(--bg-primary);
+      border-bottom-color: var(--border-color);
+    }
+
+    .quick-chip {
+      padding: 8px 14px;
+      background: var(--light);
+      border: 1px solid var(--light-gray);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--dark);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    [data-theme="dark"] .quick-chip {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .quick-chip:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* FLOATING CHAT CONTAINER */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1100px;
+      margin: 20px auto 24px;
+      width: calc(100% - 48px);
+      background: var(--bg-primary);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      min-height: 0;
+      backdrop-filter: blur(10px);
+    }
+
+    [data-theme="dark"] .chat-container {
+      background: var(--bg-primary);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 0;
+    }
+
+    #chat-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #chat-box::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #chat-box::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
+    }
+
+    #chat-box::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    /* Messages */
+    .msg {
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.4s ease;
+      max-width: 70%;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bot {
+      align-self: flex-start;
+    }
+
+    .user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .msg-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .user .msg-avatar {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+    }
+
+    .bot .msg-avatar {
+      background: var(--light);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .msg-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user .msg-header {
+      flex-direction: row-reverse;
+    }
+
+    .msg-author {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--dark);
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--gray);
+    }
+
+    .msg-content {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .bot .msg-content {
+      background: var(--light);
+      border: 1px solid var(--light-gray);
+      border-top-left-radius: 4px;
+    }
+
+    [data-theme="dark"] .bot .msg-content {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .user .msg-content {
+      background: var(--primary);
+      color: white;
+      border-top-right-radius: 4px;
+    }
+
+    .msg-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .msg:hover .msg-actions {
+      opacity: 1;
+    }
+
+    .user .msg-actions {
+      flex-direction: row-reverse;
+    }
+
+    .action-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--light-gray);
+      background: var(--white);
+      color: var(--gray);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      font-size: 13px;
+    }
+
+    [data-theme="dark"] .action-btn {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .action-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+
+    .action-btn.positive {
+      color: var(--success);
+    }
+
+    .action-btn.positive:hover {
+      background: var(--success);
+      color: white;
+    }
+
+    .action-btn.negative {
+      color: var(--danger);
+    }
+
+    .action-btn.negative:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    /* Loading Dots */
+    .loading-indicator {
+      display: flex;
+      gap: 12px;
+      align-self: flex-start;
+      max-width: 80%;
+    }
+
+    .loading-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--light);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .loading-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 18px;
+      background: var(--light);
+      border: 1px solid var(--light-gray);
+      border-radius: 18px;
+      border-top-left-radius: 4px;
+    }
+
+    [data-theme="dark"] .loading-dots {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: blink 1.4s infinite;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+      40% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Suggestions Section */
+    .suggestions-section {
+      padding: 14px 24px;
+      background: var(--white);
+      border-top: 1px solid var(--light-gray);
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+      max-height: 200px;
+      overflow: hidden;
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+      height: auto;
+      margin: 0;
+    }
+
+    .suggestions-section.show {
+      display: block;
+      max-height: 200px;
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+      height: auto;
+      padding: 14px 24px;
+    }
+
+    .suggestions-section.hidden {
+      max-height: 0 !important;
+      min-height: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+      display: none !important;
+      overflow: hidden;
+    }
+
+    [data-theme="dark"] .suggestions-section {
+      background: var(--bg-secondary);
+      border-top-color: var(--border-color);
+    }
+
+    .suggestions-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .suggestion-card {
+      padding: 10px 14px;
+      background: var(--light);
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--dark);
+      height: 44px;
+    }
+
+    [data-theme="dark"] .suggestion-card {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .suggestion-card:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .suggestion-card i {
+      font-size: 16px;
+    }
+
+    /* Input Section - Modern ChatGPT Style */
+    .input-section {
+      background: var(--white);
+      border-top: 1px solid var(--light-gray);
+      padding: 16px 24px;
+      flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+    }
+
+    [data-theme="dark"] .input-section {
+      background: var(--bg-primary);
+      border-top-color: var(--border-color);
+    }
+
+    .input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: var(--light);
+      border: 1px solid var(--light-gray);
+      border-radius: 24px;
+      padding: 8px 8px 8px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: var(--transition);
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #user-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      max-height: 120px;
+      color: var(--dark);
+      outline: none;
+    }
+
+    [data-theme="dark"] #user-input {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    #user-input:focus {
+      outline: none;
+    }
+
+    .input-container:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    #user-input::placeholder {
+      color: var(--gray);
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-right: 8px;
+    }
+
+    .icon-btn-small {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--gray);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn-small:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    [data-theme="dark"] .icon-btn-small:hover {
+      background: rgba(96, 165, 250, 0.2);
+    }
+
+    .icon-btn-small.recording {
+      background: var(--danger);
+      color: white;
+      animation: pulse-recording 1s infinite;
+    }
+
+    @keyframes pulse-recording {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .send-button {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      font-size: 18px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .send-button:hover {
+      background: var(--primary-dark);
+      transform: scale(1.05);
+    }
+
+    .send-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* FILE ATTACHMENT PREVIEW */
+    .file-preview {
+      display: none;
+      padding: 12px 20px;
+      background: var(--light);
+      border-top: 1px solid var(--light-gray);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    [data-theme="dark"] .file-preview {
+      background: var(--bg-secondary);
+      border-top-color: var(--border-color);
+    }
+
+    .file-preview.show {
+      display: flex;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--dark);
+    }
+
+    [data-theme="dark"] .file-item {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+    }
+
+    .file-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--primary-light);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    [data-theme="dark"] .file-icon {
+      background: rgba(96, 165, 250, 0.2);
+    }
+
+    .file-info {
+      flex: 1;
+    }
+
+    .file-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .file-size {
+      font-size: 11px;
+      color: var(--gray);
+    }
+
+    .file-remove {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--danger);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: var(--transition);
+    }
+
+    .file-remove:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    /* Severity Alert Modal */
+    .severity-alert {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 3000;
+      backdrop-filter: blur(8px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .severity-alert.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-content {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      animation: slideUp 0.3s ease;
+    }
+
+    [data-theme="dark"] .alert-content {
+      background: var(--bg-secondary);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .alert-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: white;
+      font-size: 40px;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .alert-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--danger);
+      margin-bottom: 12px;
+    }
+
+    .alert-message {
+      font-size: 16px;
+      color: var(--dark);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .alert-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .alert-btn {
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      font-size: 14px;
+    }
+
+    .alert-btn-primary {
+      background: var(--danger);
+      color: white;
+    }
+
+    .alert-btn-primary:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+
+    .alert-btn-secondary {
+      background: var(--light);
+      color: var(--dark);
+      border: 1px solid var(--light-gray);
+    }
+
+    .alert-btn-secondary:hover {
+      background: var(--primary-light);
+    }
+
+    /* PRIVACY POLICY MODAL */
+    .privacy-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 3000;
+      backdrop-filter: blur(8px);
+    }
+
+    .privacy-modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .privacy-content {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.3s ease;
+    }
+
+    [data-theme="dark"] .privacy-content {
+      background: var(--bg-secondary);
+    }
+
+    .privacy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .privacy-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .close-privacy {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--light);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--gray);
+      transition: var(--transition);
+    }
+
+    .close-privacy:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .privacy-section {
+      margin-bottom: 24px;
+    }
+
+    .privacy-section h3 {
+      font-size: 18px;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .privacy-section p {
+      color: var(--dark);
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .privacy-section ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .privacy-section li {
+      padding: 8px 0 8px 28px;
+      position: relative;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    .privacy-section li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* Login Modal */
+    .login-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 4000;
+      backdrop-filter: blur(10px);
+    }
+
+    .login-modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-content {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      animation: slideUp 0.3s ease;
+    }
+
+    [data-theme="dark"] .login-content {
+      background: var(--bg-secondary);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 28px;
+      color: white;
+    }
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .login-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      background: var(--light);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    [data-theme="dark"] .login-tabs {
+      background: var(--bg-primary);
+    }
+
+    .login-tab {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--gray);
+      transition: var(--transition);
+    }
+
+    .login-tab.active {
+      background: var(--white);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] .login-tab.active {
+      background: var(--bg-secondary);
+    }
+
+    .login-form {
+      display: none;
+    }
+
+    .login-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--light-gray);
+      font-size: 14px;
+      font-family: inherit;
+      transition: var(--transition);
+      background: var(--light);
+      color: var(--dark);
+    }
+
+    [data-theme="dark"] .form-input {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 8px;
+    }
+
+    .form-button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .form-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-message {
+      background: #fee;
+      color: var(--danger);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      right: 32px;
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+
+    [data-theme="dark"] .toast {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); }
+      to { transform: translateX(0); }
+    }
+
+    .toast.show {
+      display: flex;
+    }
+
+    .toast-icon {
+      font-size: 20px;
+    }
+
+    .toast.success .toast-icon {
+      color: var(--success);
+    }
+
+    .toast.error .toast-icon {
+      color: var(--danger);
+    }
+
+    .toast-message {
+      color: var(--dark);
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      padding: 14px 32px;
+      background: var(--light);
+      text-align: center;
+      font-size: 11px;
+      color: var(--gray);
+      flex-shrink: 0;
+      line-height: 1.6;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    [data-theme="dark"] .disclaimer {
+      background: var(--bg-primary);
+    }
+
+    .disclaimer strong {
+      color: var(--danger);
+    }
+
+    /* Hidden file input */
+    #file-input {
+      display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .chat-container {
+        margin: 16px;
+        width: calc(100% - 32px);
+      }
+
+      .suggestions-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .msg {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <!-- Login/Register Modal -->
+  <div class="login-modal show" id="login-modal">
+    <div class="login-content">
+      <div class="login-header">
+        <div class="login-logo">
+          <i class="fas fa-stethoscope"></i>
+        </div>
+        <div class="login-title">MediMate Pro</div>
+        <div class="login-subtitle">AI-Powered Healthcare Assistant</div>
+      </div>
+
+      <div class="login-tabs">
+        <div class="login-tab active" onclick="switchTab('login')">Login</div>
+        <div class="login-tab" onclick="switchTab('register')">Register</div>
+      </div>
+
+      <form class="login-form active" id="login-form" onsubmit="handleLogin(event)">
+        <div class="error-message" id="login-error"></div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-input" id="login-username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="login-password" required>
+        </div>
+        <button type="submit" class="form-button" id="login-btn">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </button>
+      </form>
+
+      <form class="login-form" id="register-form" onsubmit="handleRegister(event)">
+        <div class="error-message" id="register-error"></div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-input" id="register-username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email (Optional)</label>
+          <input type="email" class="form-input" id="register-email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-input" id="register-password" required>
+        </div>
+        <button type="submit" class="form-button" id="register-btn">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="app-logo">
+        <i class="fas fa-stethoscope"></i>
+      </div>
+      <div class="app-title">MediMate Pro</div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Collapse/Expand Sidebar">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+
+    <div class="sidebar-menu">
+      <div class="menu-section">
+        <div class="menu-section-title">NAVIGATION</div>
+        <div class="menu-item active" onclick="showMedicalChat()">
+          <i class="fas fa-comments-medical"></i>
+          <span>Medical Chat</span>
+        </div>
+        <div class="menu-item" onclick="showHistory()">
+          <i class="fas fa-history"></i>
+          <span>History</span>
+        </div>
+        <div class="menu-item" onclick="showFiles()">
+          <i class="fas fa-file-medical"></i>
+          <span>My Files</span>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-section-title">RESOURCES</div>
+        <div class="menu-item" onclick="showHealthLibrary()">
+          <i class="fas fa-book-medical"></i>
+          <span>Health Library</span>
+        </div>
+        <div class="menu-item" onclick="showFindDoctor()">
+          <i class="fas fa-user-md"></i>
+          <span>Find Doctor</span>
+        </div>
+        <div class="menu-item" onclick="showPrivacyPolicy()">
+          <i class="fas fa-shield-alt"></i>
+          <span>Privacy Policy</span>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-section-title">ACCOUNT</div>
+        <div class="menu-item" onclick="handleLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="theme-selector">
+      <div class="menu-section-title">THEME</div>
+      <div class="theme-option" onclick="setTheme('light')">
+        <i class="fas fa-sun"></i>
+        <span>Light</span>
+      </div>
+      <div class="theme-option" onclick="setTheme('dark')">
+        <i class="fas fa-moon"></i>
+        <span>Dark</span>
+      </div>
+      <div class="theme-option" onclick="setTheme('auto')">
+        <i class="fas fa-circle-half-stroke"></i>
+        <span>Auto (System)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="top-header">
+      <div class="page-title">
+        <i class="fas fa-comments-medical"></i>
+        Medical Consultation Chat
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button class="new-chat-btn" onclick="startNewChat()" title="Start New Conversation">
+          <i class="fas fa-plus"></i>
+          <span>New Chat</span>
+        </button>
+        <div class="status-badge" id="status-badge">
+          <div class="status-dot"></div>
+          <span id="status-text">Connecting...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-actions-bar">
+      <div class="quick-chip" onclick="insertSuggestion('I have severe headache and fever for 2 days')">
+        <i class="fas fa-head-side-virus"></i>
+        Headache & Fever
+      </div>
+      <div class="quick-chip" onclick="insertSuggestion('I have severe chest pain when breathing')">
+        <i class="fas fa-lungs"></i>
+        Chest Pain
+      </div>
+      <div class="quick-chip" onclick="insertSuggestion('I have persistent cough with phlegm for one week')">
+        <i class="fas fa-cough"></i>
+        Persistent Cough
+      </div>
+      <div class="quick-chip" onclick="insertSuggestion('I have moderate stomach pain and nausea')">
+        <i class="fas fa-stomach"></i>
+        Stomach Pain
+      </div>
+    </div>
+
+    <!-- FLOATING CHAT CONTAINER -->
+    <div class="chat-container">
+      <div id="chat-box"></div>
+
+      <div class="suggestions-section">
+        <div class="suggestions-title">
+          <i class="fas fa-lightbulb"></i>
+          Quick Symptom Assessments
+        </div>
+        <div class="suggestions-grid">
+          <div class="suggestion-card" onclick="insertSuggestion('I have moderate fever and body aches for 3 days')">
+            <i class="fas fa-thermometer-three-quarters"></i>
+            <span>Fever & Body Aches</span>
+          </div>
+          <div class="suggestion-card" onclick="insertSuggestion('I have severe chest pain and difficulty breathing')">
+            <i class="fas fa-lungs"></i>
+            <span>Chest Pain</span>
+          </div>
+          <div class="suggestion-card" onclick="insertSuggestion('I have persistent cough with yellow phlegm')">
+            <i class="fas fa-cough"></i>
+            <span>Persistent Cough</span>
+          </div>
+          <div class="suggestion-card" onclick="insertSuggestion('I have skin rash and severe itching all over body')">
+            <i class="fas fa-hand-sparkles"></i>
+            <span>Skin Rash</span>
+          </div>
+          <div class="suggestion-card" onclick="insertSuggestion('I have severe dizziness and fatigue for one week')">
+            <i class="fas fa-dizzy"></i>
+            <span>Dizziness & Fatigue</span>
+          </div>
+          <div class="suggestion-card" onclick="insertSuggestion('I have severe nausea and vomiting')">
+            <i class="fas fa-procedures"></i>
+            <span>Nausea & Vomiting</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILE PREVIEW -->
+      <div class="file-preview" id="file-preview"></div>
+
+      <div class="input-section">
+        <div class="input-container">
+          <div class="input-wrapper">
+            <textarea id="user-input" placeholder="Describe your symptoms in detail (e.g., 'I have fever and cough for 2 days with moderate severity')..." rows="1" oninput="toggleSuggestionsVisibility()"></textarea>
+            <div class="input-actions">
+              <button class="icon-btn-small" onclick="toggleVoiceInput()" id="voice-btn" title="Voice Input">
+                <i class="fas fa-microphone"></i>
+              </button>
+              <button class="icon-btn-small" onclick="document.getElementById('file-input').click()" title="Attach File">
+                <i class="fas fa-paperclip"></i>
+              </button>
+              <input type="file" id="file-input" multiple accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
+            </div>
+          </div>
+          <button id="send-btn" class="send-button" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Medical Disclaimer:</strong> MediMate Pro provides general health information for educational purposes only. Always seek professional medical advice for diagnosis and treatment.
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div class="privacy-modal" id="privacy-modal">
+    <div class="privacy-content">
+      <div class="privacy-header">
+        <div class="privacy-title">
+          <i class="fas fa-shield-alt"></i>
+          Privacy Policy
+        </div>
+        <button class="close-privacy" onclick="closePrivacyModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="privacy-section">
+        <h3><i class="fas fa-info-circle"></i> About MediMate Pro</h3>
+        <p>MediMate Pro is an AI-powered healthcare assistant designed to provide preliminary symptom analysis and health guidance. Our system uses advanced machine learning algorithms trained on medical data to help users understand their symptoms better.</p>
+      </div>
+
+      <div class="privacy-section">
+        <h3><i class="fas fa-database"></i> Data Collection & Usage</h3>
+        <p>We collect and process the following information:</p>
+        <ul>
+          <li>Symptom descriptions you provide</li>
+          <li>Medical history you share during consultations</li>
+          <li>User account information (username, email)</li>
+          <li>Diagnosis history for your personal records</li>
+        </ul>
+        <p><strong>Your data is used exclusively for:</strong></p>
+        <ul>
+          <li>Providing accurate symptom analysis</li>
+          <li>Maintaining your health history</li>
+          <li>Improving our AI model accuracy</li>
+          <li>Generating personalized health insights</li>
+        </ul>
+      </div>
+
+      <div class="privacy-section">
+        <h3><i class="fas fa-lock"></i> Data Security</h3>
+        <p>Your privacy and security are our top priorities:</p>
+        <ul>
+          <li>All data is encrypted using industry-standard protocols</li>
+          <li>Secure JWT-based authentication</li>
+          <li>No sharing of personal health information with third parties</li>
+          <li>Regular security audits and updates</li>
+        </ul>
+      </div>
+
+      <div class="privacy-section">
+        <h3><i class="fas fa-user-shield"></i> Your Rights</h3>
+        <ul>
+          <li>Access your complete medical history anytime</li>
+          <li>Request deletion of your account and data</li>
+          <li>Export your health records</li>
+          <li>Opt-out of data analysis for model improvement</li>
+        </ul>
+      </div>
+
+      <div class="privacy-section">
+        <h3><i class="fas fa-exclamation-triangle"></i> Important Disclaimers</h3>
+        <ul>
+          <li><strong>Not a Substitute for Medical Care:</strong> MediMate Pro provides educational information only and does not replace professional medical advice</li>
+          <li><strong>Emergency Situations:</strong> For severe or life-threatening symptoms, always call emergency services immediately</li>
+          <li><strong>AI Limitations:</strong> Our AI model may not detect all conditions. Always consult a licensed healthcare provider for diagnosis</li>
+          <li><strong>Accuracy:</strong> While we strive for accuracy, predictions are based on machine learning and should be verified by medical professionals</li>
+        </ul>
+      </div>
+
+      <div class="privacy-section">
+        <h3><i class="fas fa-envelope"></i> Contact Us</h3>
+        <p>For privacy concerns or questions, contact us at:</p>
+        <p><strong>Email:</strong> privacy@medimate-pro.com</p>
+        <p><strong>Last Updated:</strong> December 10, 2025</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Severity Alert Modal -->
+  <div class="severity-alert" id="severity-alert">
+    <div class="alert-content">
+      <div class="alert-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="alert-title">⚠️ Severe Condition Detected</div>
+      <div class="alert-message" id="alert-message">
+        Based on your symptoms, this may require immediate medical attention.
+      </div>
+      <div class="alert-buttons">
+        <button class="alert-btn alert-btn-primary" onclick="closeAlert()">
+          <i class="fas fa-phone-alt"></i> Call Emergency
+        </button>
+        <button class="alert-btn alert-btn-secondary" onclick="closeAlert()">
+          I Understand
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <div class="toast-icon">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="toast-message"></div>
+  </div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+    let jwtToken = null;
+    let currentUsername = null;
+    let sessionId = null;
+    let isProcessing = false;
+    let isRecording = false;
+    let recognition = null;
+    let speechSynthesis = window.speechSynthesis;
+    let selectedFiles = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      checkExistingLogin();
+      
+      // Add input event listener to show/hide Quick Symptom Assessments
+      const userInput = document.getElementById('user-input');
+      if (userInput) {
+        userInput.addEventListener('input', toggleSuggestionsVisibility);
+      }
+
+      // Load sidebar collapsed state
+      const isCollapsed = localStorage.getItem('medimate-sidebar-collapsed') === 'true';
+      if (isCollapsed) {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('sidebar-collapsed');
+      }
+    });
+
+    // THEME MANAGEMENT WITH AUTO DETECTION
+    function initTheme() {
+      const savedTheme = localStorage.getItem('medimate-theme') || 'auto';
+      applyTheme(savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function applyTheme(theme) {
+      let actualTheme = theme;
+
+      if (theme === 'auto') {
+        actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      document.body.setAttribute('data-theme', actualTheme);
+    }
+
+    function updateThemeUI(theme) {
+      document.querySelectorAll('.theme-option').forEach(option => {
+        option.classList.remove('active');
+        const text = option.textContent.trim().toLowerCase();
+        if (text.includes(theme)) {
+          option.classList.add('active');
+        }
+      });
+    }
+
+    function setTheme(theme) {
+      localStorage.setItem('medimate-theme', theme);
+      applyTheme(theme);
+      updateThemeUI(theme);
+      showToast(`Theme changed to ${theme === 'auto' ? 'system default' : theme}`, 'success');
+    }
+
+    // Listen for system theme changes when auto mode is active
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      const savedTheme = localStorage.getItem('medimate-theme');
+      if (savedTheme === 'auto') {
+        applyTheme('auto');
+      }
+    });
+
+    // FILE ATTACHMENT HANDLING
+    // Convert file to base64 for backend transmission
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      // Store file objects with metadata for later access
+      selectedFiles = [...selectedFiles, ...files.map(f => ({
+        fileObj: f,
+        name: f.name,
+        size: f.size,
+        type: f.type
+      }))];
+      displayFilePreview();
+    }
+
+    function displayFilePreview() {
+      const preview = document.getElementById('file-preview');
+      preview.innerHTML = '';
+
+      if (selectedFiles.length === 0) {
+        preview.classList.remove('show');
+        return;
+      }
+
+      preview.classList.add('show');
+
+      selectedFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+
+        const icon = getFileIcon(file.type);
+        const size = formatFileSize(file.size);
+
+        fileItem.innerHTML = `
+          <div class="file-icon">
+            <i class="fas ${icon}"></i>
+          </div>
+          <div class="file-info">
+            <div class="file-name">${file.name}</div>
+            <div class="file-size">${size}</div>
+          </div>
+          <button class="file-remove" onclick="removeFile(${index})">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+
+        preview.appendChild(fileItem);
+      });
+    }
+
+    function getFileIcon(type) {
+      if (type.startsWith('image/')) return 'fa-image';
+      if (type.includes('pdf')) return 'fa-file-pdf';
+      if (type.includes('word') || type.includes('document')) return 'fa-file-word';
+      return 'fa-file';
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      displayFilePreview();
+    }
+
+    // PRIVACY POLICY
+    function showPrivacyPolicy() {
+      document.getElementById('privacy-modal').classList.add('show');
+    }
+
+    function closePrivacyModal() {
+      document.getElementById('privacy-modal').classList.remove('show');
+    }
+
+    // AUTHENTICATION
+    function checkExistingLogin() {
+      const savedToken = localStorage.getItem('medimate-token');
+      const savedUsername = localStorage.getItem('medimate-username');
+
+      if (savedToken && savedUsername) {
+        jwtToken = savedToken;
+        currentUsername = savedUsername;
+        closeLoginModal();
+        initializeChat();
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.login-form').forEach(f => f.classList.remove('active'));
+
+      if (tab === 'login') {
+        document.querySelectorAll('.login-tab')[0].classList.add('active');
+        document.getElementById('login-form').classList.add('active');
+      } else {
+        document.querySelectorAll('.login-tab')[1].classList.add('active');
+        document.getElementById('register-form').classList.add('active');
+      }
+
+      hideError('login-error');
+      hideError('register-error');
+    }
+
+    async function handleRegister(event) {
+      event.preventDefault();
+
+      const username = document.getElementById('register-username').value.trim();
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+      const button = document.getElementById('register-btn');
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+      hideError('register-error');
+
+      try {
+        const response = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, email: email || null })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Registration failed');
+        }
+
+        showToast('Account created successfully! Please login.', 'success');
+        switchTab('login');
+        document.getElementById('login-username').value = username;
+
+      } catch (error) {
+        showError('register-error', error.message);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+      }
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const button = document.getElementById('login-btn');
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+      hideError('login-error');
+
+      try {
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('password', password);
+
+        const response = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Login failed');
+        }
+
+        const data = await response.json();
+        jwtToken = data.access_token;
+        currentUsername = username;
+        sessionId = Date.now().toString(); // Create unique session ID
+
+        localStorage.setItem('medimate-token', jwtToken);
+        localStorage.setItem('medimate-username', currentUsername);
+
+        closeLoginModal();
+        initializeChat();
+
+      } catch (error) {
+        showError('login-error', error.message);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('medimate-token');
+      localStorage.removeItem('medimate-username');
+      jwtToken = null;
+      currentUsername = null;
+      sessionId = null;
+      document.getElementById('chat-box').innerHTML = '';
+      showLoginModal();
+      updateStatusBadge(false);
+      showToast('Logged out successfully', 'success');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('login-modal').classList.remove('show');
+    }
+
+    function showLoginModal() {
+      document.getElementById('login-modal').classList.add('show');
+    }
+
+    // CHAT INITIALIZATION
+    function initializeChat() {
+      updateStatusBadge(true);
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML = '';
+
+      appendMessage(
+        `<p>Welcome, <strong>${currentUsername}</strong>! 👋 I'm MediMate Pro, your AI healthcare assistant.</p>
+        <p>I provide evidence-based medical guidance to help you understand your symptoms. Please describe:</p>
+        <ul style="margin: 12px 0; padding-left: 20px;">
+          <li>What symptoms you're experiencing</li>
+          <li>How long you've had them</li>
+          <li>Severity (mild, moderate, severe)</li>
+        </ul>
+        <p><strong style="color: var(--danger);">⚠️ Important:</strong> I'm not a substitute for professional medical care. Always consult your healthcare provider for serious concerns.</p>`,
+        'bot'
+      );
+
+      document.getElementById('user-input').focus();
+    }
+
+    // MESSAGE HANDLING
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
+      let text = input.value.trim();
+
+      if ((!text && selectedFiles.length === 0) || isProcessing) return;
+
+      if (!jwtToken) {
+        showToast('Please login first', 'error');
+        showLoginModal();
+        return;
+      }
+
+      // Check if user is asking to summarize
+      const lowerText = text.toLowerCase();
+      // DISABLED: Let summarize requests go through normal flow with files attached
+      // This allows files to be sent together with summarize requests
+      // if (lowerText.includes('summarize') || lowerText.includes('summary') || lowerText.includes('recap')) {
+      //   handleSummarizeRequest(text);
+      //   return;
+      // }
+
+      isProcessing = true;
+      const sendButton = document.getElementById('send-btn');
+      sendButton.disabled = true;
+      sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+      // Hide Quick Symptoms section during AI processing
+      hideSuggestionsSection();
+
+      // Build message with file info (ONLY for backend, not for display)
+      let messageToSend = text;
+      let fileInfo = '';
+      
+      if (selectedFiles.length > 0) {
+        fileInfo = `\n\n[Attached files: ${selectedFiles.map(f => f.name).join(', ')}]`;
+        messageToSend = (text || '[File attached for analysis]') + fileInfo;  // Include file names in message text for backend
+      }
+
+      // Display user message WITHOUT file attachment icons (don't show emoji repeatedly)
+      if (text) {
+        appendMessage(text, 'user');
+        input.value = '';
+        autoResize();
+        
+        // Mark first message as sent and hide quick assessment permanently
+        firstMessageSent = true;
+        hideSuggestionsSection();
+      } else if (selectedFiles.length > 0) {
+        // File without text - don't show in chat, just note it internally
+        messageToSend = '[File attached for analysis]';
+      }
+
+      // Clear file preview
+      document.getElementById('file-preview').classList.remove('show');
+
+      showLoadingIndicator();
+
+      try {
+        // Read file contents and convert to base64
+        let filesWithContent = null;
+        if (selectedFiles.length > 0) {
+          filesWithContent = [];
+          for (let file of selectedFiles) {
+            try {
+              const base64 = await fileToBase64(file.fileObj);
+              filesWithContent.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                content: base64  // Base64 encoded file content
+              });
+            } catch (e) {
+              console.warn(`Failed to read file ${file.name}:`, e);
+              filesWithContent.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                content: null
+              });
+            }
+          }
+        }
+
+        // Call the new /chat_with_ai endpoint with file content
+        const response = await fetch(`${API_BASE}/chat_with_ai`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ 
+            message: messageToSend,  // Include file info in message
+            conversation_id: sessionId, // Optional: for tracking conversations
+            files: filesWithContent  // File metadata + content
+          })
+        });
+
+        removeLoadingIndicator();
+        
+        if (response.status === 401) {
+          handleLogout();
+          throw new Error('Session expired. Please login again.');
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || `Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Clear selected files AFTER successful send
+        selectedFiles = [];
+        // Also clear the visual preview
+        const filePreview = document.getElementById('file-preview');
+        if (filePreview) {
+          filePreview.innerHTML = '';
+          filePreview.classList.remove('show');
+        }
+        
+        // Check if response is an error
+        if (data.error) {
+          appendMessage(
+            `<p style="color: var(--danger);"><strong>⚠️ ${data.error}:</strong> ${data.response}</p>`,
+            'bot'
+          );
+        } else if (data.diagnosis) {
+          // DIAGNOSIS COMPLETE - Display formatted diagnosis with explanation
+          const disease = data.diagnosis.disease || 'Unable to determine';
+          const severity = data.diagnosis.severity || 'unknown';
+          const summary = data.diagnosis.summary || '';
+
+          let colorClass = '#60a5fa';
+          let severityEmoji = '📊';
+
+          if (severity === 'severe' || severity === 'critical') {
+            colorClass = '#ef4444';
+            severityEmoji = severity === 'critical' ? '🚨🚨' : '🚨';
+            showSeverityAlert(disease, severity);
+          } else if (severity === 'moderate') {
+            colorClass = '#f59e0b';
+            severityEmoji = '⚠️';
+          } else if (severity === 'mild') {
+            colorClass = '#10b981';
+            severityEmoji = '✅';
+          }
+
+          const botHtml = `
+            <div style="background: var(--primary-light); padding: 14px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid var(--primary); line-height: 1.6;">
+              ${formatAIResponse(data.response)}
+            </div>
+          `;
+
+          // Permanently hide quick symptoms after diagnosis is complete
+          hasDiagnosis = true;
+          hideSuggestionsSection();
+          
+          // Scroll to show the response
+          setTimeout(() => {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+          }, 100);
+
+          appendMessage(botHtml, 'bot');
+        } else {
+          // QUESTIONING PHASE - Gemini is asking clarifying questions
+          const botHtml = `
+            <div style="background: var(--primary-light); padding: 14px; border-radius: 8px; border-left: 3px solid var(--primary); line-height: 1.6; color: var(--dark);">
+              ${formatAIResponse(data.response)}
+            </div>
+          `;
+          
+          appendMessage(botHtml, 'bot');
+        }
+
+      } catch (error) {
+        removeLoadingIndicator();
+        appendMessage(
+          `<p style="color: var(--danger);"><strong>❌ Error:</strong> ${error.message}</p>
+          <p>Please check if the backend server is running at <code>${API_BASE}</code></p>`,
+          'bot'
+        );
+        console.error('Error:', error);
+      } finally {
+        isProcessing = false;
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        
+        // Show confirmation that files were sent (if any)
+        if (selectedFiles.length > 0) {
+          showToast(`✅ Sent ${selectedFiles.length} file(s) with your message`, 'success');
+          selectedFiles = [];  // Clear after successful send
+        }
+
+        // Show Quick Symptoms section back after AI responds (only if no diagnosis yet AND first message not sent)
+        if (!hasDiagnosis && !firstMessageSent) {
+          setTimeout(() => {
+            showSuggestionsSection();
+          }, 300);
+        }
+
+        input.focus();
+      }
+    }
+
+    function getSeverityAdvice(severity) {
+  const adviceMap = {
+    severe: `
+      <div class="advice-box severe">
+        <p class="advice-title">⚠️ URGENT ACTION REQUIRED</p>
+        <p class="advice-text">Your symptoms indicate a potentially serious condition. Please:</p>
+        <ul class="advice-list">
+          <li>Seek immediate medical attention</li>
+          <li>Visit the nearest emergency room or call emergency services</li>
+          <li>Do not ignore these symptoms</li>
+        </ul>
+      </div>
+    `,
+    moderate: `
+      <div class="advice-box moderate">
+        <p class="advice-title">⚠️ MEDICAL CONSULTATION RECOMMENDED</p>
+        <p class="advice-text">Your condition requires attention. Please:</p>
+        <ul class="advice-list">
+          <li>Consult a doctor within 24–48 hours</li>
+          <li>Monitor your symptoms closely</li>
+          <li>Seek immediate help if symptoms worsen</li>
+        </ul>
+      </div>
+    `,
+    mild: `
+      <div class="advice-box mild">
+        <p class="advice-title">✅ SELF‑CARE RECOMMENDED</p>
+        <p class="advice-text">Your condition appears manageable with home care:</p>
+        <ul class="advice-list">
+          <li>Get plenty of rest and stay hydrated</li>
+          <li>Monitor your symptoms</li>
+          <li>Consult a doctor if symptoms persist or worsen</li>
+        </ul>
+      </div>
+    `
+  };
+  return adviceMap[severity] || '<p class="advice-text">Please consult a healthcare professional.</p>';
+}
+
+    function showLoadingIndicator() {
+      const chatBox = document.getElementById('chat-box');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'loading-indicator';
+      loadingDiv.id = 'loading-indicator';
+      loadingDiv.innerHTML = `
+        <div class="loading-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      `;
+      chatBox.appendChild(loadingDiv);
+      autoScrollToBottom();
+    }
+
+    function removeLoadingIndicator() {
+      const loading = document.getElementById('loading-indicator');
+      if (loading) loading.remove();
+    }
+
+    // FORMAT AI RESPONSE with proper markdown and structure
+    function formatAIResponse(text) {
+      if (!text) return text;
+      
+      // Use marked.js library for markdown conversion with proper escaping
+      const sanitizeHtml = (html) => {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        return div.innerHTML;
+      };
+      
+      // Configure marked options
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        headerIds: true
+      });
+      
+      let formatted = text.trim();
+      
+      // Convert markdown to HTML using marked.js
+      try {
+        formatted = marked.parse(formatted);
+      } catch (e) {
+        console.warn('Markdown parsing error:', e);
+        // Fallback to manual parsing if marked fails
+        formatted = text;
+      }
+      
+      // Custom styling for headers
+      formatted = formatted.replace(/<h1>/g, '<h1 style="color: var(--primary); margin: 16px 0 8px 0; font-size: 22px;">');
+      formatted = formatted.replace(/<h2>/g, '<h2 style="color: var(--primary); margin: 14px 0 8px 0; font-size: 18px;">');
+      formatted = formatted.replace(/<h3>/g, '<h3 style="color: var(--primary); margin: 12px 0 8px 0; font-size: 16px;">');
+      formatted = formatted.replace(/<h4>/g, '<h4 style="color: var(--primary); margin: 10px 0 6px 0; font-size: 15px;">');
+      
+      // Custom styling for lists
+      formatted = formatted.replace(/<ul>/g, '<ul style="margin: 12px 0; padding-left: 20px; line-height: 1.8;">');
+      formatted = formatted.replace(/<ol>/g, '<ol style="margin: 12px 0; padding-left: 20px; line-height: 1.8;">');
+      formatted = formatted.replace(/<li>/g, '<li style="margin: 6px 0;">');
+      
+      // Custom styling for paragraphs
+      formatted = formatted.replace(/<p>/g, '<p style="margin: 10px 0; line-height: 1.6;">');
+      
+      // Custom styling for code blocks
+      formatted = formatted.replace(/<pre>/g, '<pre style="background: var(--light); padding: 12px; border-radius: 6px; overflow-x: auto; margin: 10px 0; border-left: 3px solid var(--primary);">');
+      formatted = formatted.replace(/<code>/g, '<code style="font-family: monospace; color: var(--primary); font-size: 13px;">');
+      
+      // Custom styling for blockquotes
+      formatted = formatted.replace(/<blockquote>/g, '<blockquote style="border-left: 3px solid var(--primary); padding-left: 12px; margin: 12px 0; color: var(--gray);">');
+      
+      // Ensure proper spacing
+      formatted = formatted.replace(/(<\/p>)(<h[1-6])/g, '$1$2');
+      
+      return formatted;
+    }
+
+    // SANITIZE RESPONSE - Remove stray HTML tags
+    function sanitizeResponse(text) {
+      if (!text) return text;
+      
+      // Remove stray closing tags that don't have opening tags
+      // First, count opening and closing tags
+      const openDivs = (text.match(/<div/g) || []).length;
+      const closeDivs = (text.match(/<\/div>/g) || []).length;
+      
+      // If there are more closing divs than opening, remove extras
+      let sanitized = text;
+      if (closeDivs > openDivs) {
+        const extraClosures = closeDivs - openDivs;
+        for (let i = 0; i < extraClosures; i++) {
+          sanitized = sanitized.replace(/<\/div>/, '');
+        }
+      }
+      
+      // Remove any other stray closing tags
+      sanitized = sanitized.replace(/<\/p>\s*$/, ''); // Trailing </p>
+      sanitized = sanitized.replace(/^\s*<p>/, ''); // Leading <p>
+      
+      return sanitized.trim();
+    }
+
+    function appendMessage(htmlContent, sender) {
+      const chatBox = document.getElementById('chat-box');
+      
+      // Sanitize the content to remove stray HTML tags
+      let cleanContent = sanitizeResponse(htmlContent);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg ${sender}`;
+
+      let icon = sender === 'user' ? 'fa-user' : 'fa-robot';
+      let author = sender === 'user' ? currentUsername || 'You' : 'MediMate Pro';
+      const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+      // For bot messages that contain markdown-like text, apply formatting
+      let content = cleanContent;  // Use sanitized content
+      if (sender === 'bot' && !cleanContent.startsWith('<')) {
+        // If the content doesn't already have HTML tags, apply markdown formatting
+        content = formatAIResponse(cleanContent);
+      } else if (sender === 'bot') {
+        // Even if it has HTML, ensure nested text is properly formatted
+        // Only apply formatAIResponse to plain text content
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = cleanContent;
+        const plainText = tempDiv.innerText;
+        if (plainText && !plainText.includes('<')) {
+          // Has HTML tags, don't reformat - already formatted
+        }
+        content = cleanContent;  // Use sanitized content
+      }
+
+      msgDiv.innerHTML = `
+        <div class="msg-avatar">
+          <i class="fas ${icon}"></i>
+        </div>
+        <div class="msg-body">
+          <div class="msg-header">
+            <span class="msg-author">${author}</span>
+            <span class="msg-time">${time}</span>
+          </div>
+          <div class="msg-content">${content}</div>
+          ${sender === 'bot' ? `
+          <div class="msg-actions">
+            <button class="action-btn" onclick="speakMessage(this)" title="Listen">
+              <i class="fas fa-volume-up"></i>
+            </button>
+            <button class="action-btn" onclick="copyMessage(this)" title="Copy">
+              <i class="fas fa-copy"></i>
+            </button>
+            <button class="action-btn positive" onclick="likeMessage(this)" title="Helpful">
+              <i class="fas fa-thumbs-up"></i>
+            </button>
+            <button class="action-btn negative" onclick="dislikeMessage(this)" title="Not Helpful">
+              <i class="fas fa-thumbs-down"></i>
+            </button>
+          </div>
+          ` : ''}
+        </div>
+      `;
+
+      chatBox.appendChild(msgDiv);
+      autoScrollToBottom();
+    }
+
+    function autoScrollToBottom() {
+      const chatBox = document.getElementById('chat-box');
+      chatBox.scrollTo({
+        top: chatBox.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    // MESSAGE ACTIONS
+    function speakMessage(button) {
+      const msgContent = button.closest('.msg-body').querySelector('.msg-content');
+      const text = msgContent.innerText;
+
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        button.innerHTML = '<i class="fas fa-volume-up"></i>';
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      utterance.onstart = () => {
+        button.innerHTML = '<i class="fas fa-stop"></i>';
+      };
+
+      utterance.onend = () => {
+        button.innerHTML = '<i class="fas fa-volume-up"></i>';
+      };
+
+      speechSynthesis.speak(utterance);
+      showToast('Playing audio...', 'success');
+    }
+
+    function copyMessage(button) {
+      const msgContent = button.closest('.msg-body').querySelector('.msg-content');
+      const text = msgContent.innerText;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Message copied to clipboard!', 'success');
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+          button.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 2000);
+      });
+    }
+
+    function likeMessage(button) {
+      button.style.color = '#10b981';
+      button.style.background = '#d1fae5';
+      showToast('Thank you for your feedback!', 'success');
+    }
+
+    function dislikeMessage(button) {
+      button.style.color = '#ef4444';
+      button.style.background = '#fee';
+      showToast('Feedback recorded. We will improve!', 'success');
+    }
+
+    // SEVERITY ALERT - Enhanced to handle all severity levels
+    function showSeverityAlert(disease, severity) {
+      const alert = document.getElementById('severity-alert');
+      const message = document.getElementById('alert-message');
+      const alertTitle = document.querySelector('.alert-title');
+      
+      let alertText = '';
+      let titleText = '';
+      let bgColor = '';
+      let textColor = '';
+      
+      if (severity === 'critical') {
+        titleText = '🚨 CRITICAL ALERT - MEDICAL EMERGENCY 🚨';
+        alertText = `
+          <div style="color: #dc2626; font-weight: bold; font-size: 16px; margin-bottom: 12px;">
+            CRITICAL CONDITION DETECTED
+          </div>
+          <p style="margin: 10px 0;"><strong>${disease}</strong> with <strong style="color: #dc2626;">CRITICAL</strong> severity.</p>
+          <div style="margin-top: 16px; padding: 14px; background: #fee2e2; border-radius: 8px; border-left: 4px solid #dc2626;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #991b1b;">⚠️ THIS IS A MEDICAL EMERGENCY!</p>
+            <ul style="margin: 8px 0; padding-left: 20px; color: #7f1d1d;">
+              <li style="margin: 4px 0;">📞 Call emergency services immediately (911)</li>
+              <li style="margin: 4px 0;">🏥 Go to the nearest emergency room NOW</li>
+              <li style="margin: 4px 0;">⏱️ Do not wait for test results</li>
+              <li style="margin: 4px 0;">📋 Tell them your symptoms when you arrive</li>
+            </ul>
+          </div>
+        `;
+        bgColor = '#fee2e2';
+        textColor = '#991b1b';
+      } else if (severity === 'severe') {
+        titleText = '🚨 SEVERE CONDITION - URGENT MEDICAL ATTENTION REQUIRED';
+        alertText = `
+          <p style="margin: 10px 0;"><strong>${disease}</strong> with <strong style="color: #dc2626;">SEVERE</strong> severity.</p>
+          <div style="margin-top: 16px; padding: 14px; background: #fee2e2; border-radius: 8px; border-left: 4px solid #dc2626;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #991b1b;">⚠️ IMMEDIATE MEDICAL ATTENTION REQUIRED</p>
+            <ul style="margin: 8px 0; padding-left: 20px; color: #7f1d1d;">
+              <li style="margin: 4px 0;">🏥 Visit the nearest emergency room immediately</li>
+              <li style="margin: 4px 0;">📞 Call your doctor or emergency services now</li>
+              <li style="margin: 4px 0;">⏱️ Do not delay - go to the hospital TODAY</li>
+              <li style="margin: 4px 0;">📋 Bring this information with you</li>
+            </ul>
+          </div>
+        `;
+        bgColor = '#fee2e2';
+        textColor = '#991b1b';
+      } else if (severity === 'moderate') {
+        titleText = '⚠️ MODERATE CONDITION - MEDICAL CONSULTATION NEEDED';
+        alertText = `
+          <p style="margin: 10px 0;"><strong>${disease}</strong> with <strong style="color: #f59e0b;">MODERATE</strong> severity.</p>
+          <div style="margin-top: 16px; padding: 14px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #92400e;">⚡ MEDICAL CONSULTATION RECOMMENDED</p>
+            <ul style="margin: 8px 0; padding-left: 20px; color: #78350f;">
+              <li style="margin: 4px 0;">👨‍⚕️ Schedule a doctor appointment within 24-48 hours</li>
+              <li style="margin: 4px 0;">🏥 Go to an urgent care clinic if you can't reach your doctor</li>
+              <li style="margin: 4px 0;">📊 Monitor your symptoms closely</li>
+              <li style="margin: 4px 0;">🆘 Seek emergency care if symptoms worsen</li>
+            </ul>
+          </div>
+        `;
+        bgColor = '#fef3c7';
+        textColor = '#78350f';
+      } else {
+        // mild
+        titleText = '✅ MILD CONDITION - SELF-CARE RECOMMENDED';
+        alertText = `
+          <p style="margin: 10px 0;"><strong>${disease}</strong> with <strong style="color: #10b981;">MILD</strong> severity.</p>
+          <div style="margin-top: 16px; padding: 14px; background: #d1fae5; border-radius: 8px; border-left: 4px solid #10b981;">
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #065f46;">✅ SELF-CARE RECOMMENDED</p>
+            <ul style="margin: 8px 0; padding-left: 20px; color: #047857;">
+              <li style="margin: 4px 0;">💤 Get plenty of rest and stay hydrated</li>
+              <li style="margin: 4px 0;">📊 Monitor your symptoms</li>
+              <li style="margin: 4px 0;">🏥 Contact your doctor if symptoms persist or worsen</li>
+              <li style="margin: 4px 0;">💊 Follow basic care guidelines</li>
+            </ul>
+          </div>
+        `;
+        bgColor = '#d1fae5';
+        textColor = '#065f46';
+      }
+      
+      // Update alert content
+      alertTitle.textContent = titleText;
+      message.innerHTML = alertText;
+      
+      // Update alert styling based on severity
+      const alertContent = document.querySelector('.alert-content');
+      if (alertContent) {
+        alertContent.style.borderTop = `4px solid ${textColor}`;
+      }
+      
+      // Show the alert
+      alert.classList.add('show');
+      
+      // Auto-hide after 30 seconds for non-critical, 60 seconds for critical
+      const hideTimeout = severity === 'critical' ? 60000 : 30000;
+      setTimeout(() => {
+        if (alert.classList.contains('show')) {
+          alert.classList.remove('show');
+        }
+      }, hideTimeout);
+    }
+
+    function closeAlert() {
+      document.getElementById('severity-alert').classList.remove('show');
+    }
+
+    // UI HELPERS
+    function updateStatusBadge(online) {
+      const badge = document.getElementById('status-badge');
+      const statusText = document.getElementById('status-text');
+
+      if (online) {
+        badge.classList.remove('offline');
+        statusText.textContent = 'AI Assistant Online';
+      } else {
+        badge.classList.add('offline');
+        statusText.textContent = 'Offline';
+      }
+    }
+
+    function insertSuggestion(text) {
+      document.getElementById('user-input').value = text;
+      document.getElementById('user-input').focus();
+      autoResize();
+      toggleSuggestionsVisibility();
+    }
+
+    function autoResize() {
+      const textarea = document.getElementById('user-input');
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    // Track if diagnosis has been made
+    let hasDiagnosis = false;
+    let firstMessageSent = false;
+    
+    function toggleSuggestionsVisibility() {
+      // Once first message is sent, never show suggestions again
+      if (firstMessageSent) return;
+      
+      const input = document.getElementById('user-input');
+      const suggestionsSection = document.querySelector('.suggestions-section');
+      
+      if (!suggestionsSection) return;
+      
+      // Hide suggestions when user starts typing
+      if (input.value.trim().length > 0) {
+        suggestionsSection.classList.add('hidden');
+        suggestionsSection.classList.remove('show');
+      } else {
+        // Show suggestions only when input is empty (initial state)
+        suggestionsSection.classList.remove('hidden');
+        suggestionsSection.classList.add('show');
+      }
+    }
+    
+    function hideSuggestionsSection() {
+      const suggestionsSection = document.querySelector('.suggestions-section');
+      if (suggestionsSection) {
+        suggestionsSection.classList.add('hidden');
+        suggestionsSection.classList.remove('show');
+        // Force immediate hide
+        suggestionsSection.style.display = 'none !important';
+      }
+    }
+    
+    function showSuggestionsSection() {
+      // Never show if first message has been sent
+      if (firstMessageSent) return;
+      
+      const suggestionsSection = document.querySelector('.suggestions-section');
+      const input = document.getElementById('user-input');
+      // Only show if input is empty
+      if (suggestionsSection && input.value.trim().length === 0) {
+        suggestionsSection.classList.remove('hidden');
+        suggestionsSection.classList.add('show');
+        suggestionsSection.style.display = '';
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = toast.querySelector('.toast-message');
+      const toastIcon = toast.querySelector('.toast-icon i');
+
+      toastMessage.textContent = message;
+      toast.className = `toast ${type} show`;
+
+      if (type === 'success') {
+        toastIcon.className = 'fas fa-check-circle';
+      } else if (type === 'error') {
+        toastIcon.className = 'fas fa-exclamation-circle';
+      }
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function showError(elementId, message) {
+      const errorEl = document.getElementById(elementId);
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+    }
+
+    function hideError(elementId) {
+      const errorEl = document.getElementById(elementId);
+      errorEl.classList.remove('show');
+    }
+
+    // VOICE RECOGNITION - IMPROVED FOR NOISY ENVIRONMENTS
+    console.log('[VOICE INIT] Checking for Speech Recognition API...');
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      console.log('[VOICE INIT] Speech Recognition API found:', SpeechRecognition.name);
+      try {
+        recognition = new SpeechRecognition();
+        console.log('[VOICE INIT] Recognition object created successfully');
+      } catch (e) {
+        console.error('[VOICE INIT] Failed to create recognition object:', e);
+        recognition = null;
+      }
+      
+      // Optimize settings for noisy environments
+      recognition.continuous = true;  // Keep listening for continuous speech
+      recognition.interimResults = true;  // Show interim results as user speaks
+      recognition.maxAlternatives = 1;  // Only get best match (improves speed)
+      recognition.lang = 'en-US';
+      
+      // Silence detection timeout (ms) - longer timeout for noisy areas
+      const SILENCE_TIMEOUT = 3000;  // 3 seconds of silence = end recognition
+      let silenceTimeout;
+      let isListening = false;
+
+      recognition.onstart = function() {
+        isListening = true;
+        console.log('[VOICE] Recognition started, lang:', recognition.lang);
+      };
+
+      recognition.onresult = function(event) {
+        let transcript = '';
+        let isFinal = false;
+        console.log('[VOICE RESULT] Event received, resultIndex:', event.resultIndex, 'results.length:', event.results.length);
+        
+        // Process all results and combine them
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          const confidence = result[0].confidence;
+          const text = result[0].transcript;
+          console.log(`[VOICE RESULT] Result ${i}: "${text}" (confidence: ${(confidence*100).toFixed(1)}%, final: ${result.isFinal})}`);
+          
+          // Only use results with minimum confidence
+          if (confidence > 0.3) {
+            transcript += text + ' ';
+          }
+          
+          // Check if this is final result
+          if (result.isFinal) {
+            isFinal = true;
+          }
+        }
+        
+        transcript = transcript.trim();
+        console.log('[VOICE RESULT] Final transcript:', transcript, 'isFinal:', isFinal);
+        
+        // Update input field with accumulated text
+        if (transcript) {
+          document.getElementById('user-input').value = transcript;
+          autoResize();
+          
+          // Reset silence timeout on each recognized word
+          clearTimeout(silenceTimeout);
+          
+          // If final result, stop listening after short delay
+          if (isFinal) {
+            console.log('[VOICE RESULT] Stopping recognition after final result');
+            silenceTimeout = setTimeout(() => {
+              recognition.stop();
+            }, 500);  // Wait 500ms after final result
+          }
+        }
+      };
+
+      recognition.onerror = function(event) {
+        console.error('[VOICE ERROR]', event.error);
+        
+        // Handle specific error types
+        switch(event.error) {
+          case 'no-speech':
+            showToast('No speech detected. Please speak louder or try again.', 'warning');
+            break;
+          case 'audio-capture':
+            showToast('Microphone not available. Check permissions.', 'error');
+            break;
+          case 'network':
+            showToast('Network error. Please try again.', 'error');
+            break;
+          case 'aborted':
+            console.log('Voice input aborted');
+            break;
+          default:
+            showToast(`Voice error: ${event.error}. Try again.`, 'warning');
+        }
+        
+        stopRecording();
+        clearTimeout(silenceTimeout);
+      };
+
+      recognition.onend = function() {
+        isListening = false;
+        console.log('[VOICE] Recognition ended');
+        stopRecording();
+        clearTimeout(silenceTimeout);
+        
+        // Auto-send if text was recognized
+        const inputText = document.getElementById('user-input').value.trim();
+        if (inputText && isRecording === false) {
+          // User can review and manually send if needed
+          document.getElementById('user-input').focus();
+        }
+      };
+    }
+
+    function toggleVoiceInput() {
+      console.log('[VOICE TOGGLE] Current state - isRecording:', isRecording, 'recognition:', !!recognition);
+      
+      if (!recognition) {
+        showToast('❌ Voice input not supported. Use Chrome, Edge, or Safari.', 'error');
+        console.error('[VOICE] Browser does not support Web Speech API');
+        return;
+      }
+
+      if (isRecording) {
+        // Stop recording
+        console.log('[VOICE TOGGLE] Stopping recognition');
+        try {
+          recognition.stop();
+        } catch (e) {
+          console.error('[VOICE] Error stopping recognition:', e);
+        }
+      } else {
+        // Start recording
+        console.log('[VOICE TOGGLE] Starting recognition');
+        try {
+          recognition.start();
+          startRecording();
+        } catch (e) {
+          console.error('[VOICE] Error starting recognition:', e);
+          showToast(`Voice error: ${e.message}`, 'error');
+        }
+      }
+    }
+
+    function startRecording() {
+      isRecording = true;
+      const voiceBtn = document.getElementById('voice-btn');
+      const input = document.getElementById('user-input');
+      
+      voiceBtn.classList.add('recording');
+      voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+      voiceBtn.style.backgroundColor = '#ef4444';  // Red while recording
+      
+      input.placeholder = '🎤 Listening... Speak now';
+      showToast('🎤 Listening... Speak clearly', 'success');
+    }
+
+    function stopRecording() {
+      isRecording = false;
+      const voiceBtn = document.getElementById('voice-btn');
+      const input = document.getElementById('user-input');
+      
+      voiceBtn.classList.remove('recording');
+      voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+      voiceBtn.style.backgroundColor = '';  // Reset color
+      
+      input.placeholder = 'Describe your symptoms in detail (e.g., \'I have fever and cough for 2 days with moderate severity\')...';
+      
+      // Only show message if there's no transcribed text
+      if (!input.value.trim()) {
+        showToast('Voice input complete. Ready to send.', 'info');
+      }
+    }
+
+    // NAVIGATION
+    function showMedicalChat() {
+      showToast('Already in Medical Chat', 'success');
+    }
+
+    function showHistory() {
+      showToast('Chat History - Feature coming soon!', 'success');
+    }
+
+    function showFiles() {
+      showToast('My Files - Feature coming soon!', 'success');
+    }
+
+    function showHealthLibrary() {
+      showToast('Health Library - Feature coming soon!', 'success');
+    }
+
+    function showFindDoctor() {
+      showToast('Find Doctor - Feature coming soon!', 'success');
+    }
+
+    // START NEW CHAT
+    async function startNewChat() {
+      // Clear chat box
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML = '';
+      
+      // Reset flags
+      firstMessageSent = false;
+      hasDiagnosis = false;
+      isProcessing = false;
+      
+      // Clear input
+      const userInput = document.getElementById('user-input');
+      userInput.value = '';
+      autoResize();
+      
+      // Clear attached files and file preview
+      selectedFiles = [];
+      const filePreview = document.getElementById('file-preview');
+      if (filePreview) {
+        filePreview.innerHTML = '';
+        filePreview.classList.remove('show');
+      }
+      
+      // Reset button state
+      const sendBtn = document.getElementById('send-btn');
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+      
+      // Show suggestions again
+      const suggestionsSection = document.querySelector('.suggestions-section');
+      if (suggestionsSection) {
+        suggestionsSection.classList.remove('hidden');
+        suggestionsSection.classList.add('show');
+      }
+      
+      // Clear backend conversation state
+      try {
+        const token = jwtToken || localStorage.getItem('medimate-token');
+        await fetch('http://127.0.0.1:8000/clear_conversation', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Backend conversation cleared');
+      } catch (error) {
+        console.error('Error clearing backend conversation:', error);
+      }
+      
+      showToast('New chat started! Ready to help.', 'success');
+      userInput.focus();
+    }
+
+    // HANDLE SUMMARIZE REQUEST
+    function handleSummarizeRequest(userInput) {
+      const input = document.getElementById('user-input');
+      
+      // Append user message to chat
+      appendMessage(userInput, 'user');
+      input.value = '';
+      autoResize();
+      
+      // Get chat box to extract messages
+      const chatBox = document.getElementById('chat-box');
+      const messages = chatBox.querySelectorAll('.msg-content');
+      
+      if (messages.length === 0) {
+        showToast('No conversation to summarize yet.', 'info');
+        return;
+      }
+      
+      // Show loading indicator
+      showLoadingIndicator();
+      
+      try {
+        // Extract all messages from the chat
+        let conversationText = '';
+        messages.forEach((msg, index) => {
+          const text = msg.textContent.trim();
+          conversationText += (index > 0 ? '\n\n' : '') + text;
+        });
+        
+        // Create summary using Gemini
+        isProcessing = true;
+        const sendButton = document.getElementById('send-btn');
+        sendButton.disabled = true;
+        
+        // Call a summarize endpoint or use chat endpoint with special message
+        fetch(`${API_BASE}/chat_with_ai`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify({ 
+            message: `Please provide a concise summary of our conversation including: 1) Main symptoms discussed, 2) Duration and severity, 3) Any diagnosis or recommendations provided. Format it in a clear, easy-to-read way.`,
+            conversation_id: sessionId
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          removeLoadingIndicator();
+          if (data.response) {
+            appendMessage('📋 ' + data.response, 'bot');
+            showToast('Summary generated successfully!', 'success');
+          } else {
+            showToast('Could not generate summary', 'error');
+          }
+        })
+        .catch(error => {
+          removeLoadingIndicator();
+          console.error('Summary error:', error);
+          showToast('Error generating summary: ' + error.message, 'error');
+        })
+        .finally(() => {
+          isProcessing = false;
+          sendButton.disabled = false;
+          sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+          input.focus();
+        });
+        
+      } catch (error) {
+        removeLoadingIndicator();
+        showToast('Error: ' + error.message, 'error');
+        isProcessing = false;
+      }
+    }
+
+    // SIDEBAR COLLAPSE/EXPAND
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.querySelector('.main-content');
+      
+      sidebar.classList.toggle('collapsed');
+      mainContent.classList.toggle('sidebar-collapsed');
+      
+      // Save preference
+      localStorage.setItem('medimate-sidebar-collapsed', sidebar.classList.contains('collapsed'));
+    }
+
+    // EVENT LISTENERS
+    document.getElementById('user-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    document.getElementById('user-input').addEventListener('input', autoResize);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeAlert();
+        closePrivacyModal();
+      }
+    });
+  </script>
+</body>
+</html>-

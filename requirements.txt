@@ -1,0 +1,29 @@
+# Core dependencies - CPU or GPU (auto-detect)
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
+transformers>=4.30
+datasets>=2.10
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+
+# Flask & API
+flask>=3.0
+flask-sqlalchemy>=3.1
+sqlalchemy>=2.0
+requests>=2.32
+passlib>=1.7.4
+bcrypt>=4.0
+fastapi>=0.100
+uvicorn>=0.23
+python-jose>=3.3
+cryptography>=40.0
+python-multipart>=0.0.20
+
+# NER & ML utilities
+evaluate>=0.4
+
+# Additional utilities
+python-dotenv>=1.0
+tqdm>=4.66
