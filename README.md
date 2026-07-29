@@ -335,7 +335,6 @@ cd c:\Users\manis\Desktop\New-PRO\medimate; .\START_MEDIMATE.ps1
 
 Your MediMate Pro application is **complete, tested, and ready to use**.
 
-Good luck! 🚀
 
 ---
 
